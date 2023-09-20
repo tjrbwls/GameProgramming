@@ -15,3 +15,14 @@
 ![highlow04](https://github.com/tjrbwls/GameProgramming/assets/118953733/99646331-b108-40ef-b8ba-bccf63eb0d9a)
 
 ## number.c 입력 받은 정수 픽셀로 출력
+
+![number](https://github.com/tjrbwls/GameProgramming/assets/118953733/569488cc-897d-41df-8270-bc0fc1abe014)
+
+
+## vertiAndHori.c 입력 받은 수직 범위와 수평 범위 슬라이드 바로 출력
+
+![vertiAndHori](https://github.com/tjrbwls/GameProgramming/assets/118953733/13e77c54-9569-449b-83fd-b65fdba63368)
+
+## moveAndTurn.c 키보드와 방향키로 픽셀이동
+
+![moveAndTurn](https://github.com/tjrbwls/GameProgramming/assets/118953733/fbd9a383-9c81-43c8-a7bd-e2ca7c84ece4)
