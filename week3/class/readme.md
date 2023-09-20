@@ -13,3 +13,5 @@
 ## highlow04.c 입력 숫자 높은 단위 순, 낮은 단위 순으로 출력
 
 ![highlow04](https://github.com/tjrbwls/GameProgramming/assets/118953733/99646331-b108-40ef-b8ba-bccf63eb0d9a)
+
+## number.c 입력 받은 정수 픽셀로 출력
