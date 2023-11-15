@@ -1,9 +1,11 @@
 ### 발표자료 (PPT)
 
+[게임 프로그래밍 Upgrade.pptx](https://github.com/tjrbwls/GameProgramming/files/13361077/Upgrade.pptx)
 
 
 ### 발표자료 (PDF)
 
+[게임 프로그래밍 Upgrade.pdf](https://github.com/tjrbwls/GameProgramming/files/13361076/Upgrade.pdf)
 
 
 ### 업그레이드 된 부분
