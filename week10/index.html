@@ -1,1 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>fortress</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #fortress {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="fortress" width="1100px" height="700px"></canvas>
+    <div style="display: none"><img id="background" src="./image/background.jpg" /></div>
+    <div style="display: none"><img id="wall" src="./image/wall.jpg" /></div>
+    <div style="display: none"><img id="border" src="./image/border.png"/></div>
+    <div style="display: none"><img id="hpbar1" src="./image/hpbar1.png"/></div>
+    <div style="display: none"><img id="hpbar2" src="./image/hpbar2.png"/></div>
+    <div style="display: none"><img id="hpbar3" src="./image/hpbar3.png"/></div>
+    <div style="display: none"><img id="hpbar4" src="./image/hpbar4.png"/></div>
+    <div style="display: none"><img id="hpbar5" src="./image/hpbar5.png"/></div>
+    <div style="display: none"><img id="bhpbar1" src="./image/Bhpbar1.png"/></div>
+    <div style="display: none"><img id="bhpbar2" src="./image/Bhpbar2.png"/></div>
+    <div style="display: none"><img id="bhpbar3" src="./image/Bhpbar3.png"/></div>
+    <div style="display: none"><img id="bhpbar4" src="./image/Bhpbar4.png"/></div>
+    <script>
+      const canvas = document.getElementById("fortress");
+      const ctx = canvas.getContext("2d");
+      const width = canvas.width;
+      const height = canvas.height;
+      const tankWidth = 50;
+      const tankHeight = 50;
+      let tankA = 20;
+      let tankB = 1030;
+      const tankDa = 3;
+      const tankDb = 3;
+      let tankLeftPressed = false;
+      let tankRightPressed = false;
+      let tankACenterX;
+      let tankACenterY;
+      let tankBCenterX;
+      let tankBCenterY;
+      let cannonAAngle = Math.PI / 4;
+      let cannonBAngle = -(Math.PI / 4);
+      const cannonAngleDIF = Math.PI / 60;
+      const cannonLength = tankWidth * Math.sqrt(1.5);
+      let missileRadius = 5;
+      let missileX;
+      let missileY;
+      let isCharging = false;
+      let isFired = false;
+      let gauge = Math.PI;
+      const gaugeDIF = Math.PI / 100;
+      const gaugeBarRadius = 30;
+      let missilePower;
+      let missileDx;
+      let missileDy;
+      const GRAVITY_ACCELERATION = 0.098;
+      let control = false;
+      let AHP = 5;
+      let BHP = 5;
+      let bang = new Audio();
+      bang.src = "./sound/bang.mp3";
+      bang.volume =  0.5;
+      bang.playbackRate = 1.5;
+      let boom = new Audio();
+      boom.src = "./sound/boom.mp3";
+      boom.volume = 0.5;
+      boom.playbackRate = 2.0;
+      let useSkill = new Audio();
+      useSkill.src = "./sound/skill.mp3";
+      useSkill.volume = 0.5;
+      useSkill.playbackRate = 2.0;
+      const blockWidth = 50;
+      const blockHeight = 250;
+      const blockX = width / 2 - 25;
+      const blockY = height - blockHeight;
+      let fSkillA = true;
+      let fSkillB = true;
+      let sSkillA = true;
+      let sSkillB = true;
+      let tSkillA = true;
+      let tSkillB = true;
+      let checktSkill = 0;
+      let Aname;
+      let Bname;
+      let count = 9;
 
+      const draw = () => {
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(document.getElementById("background"), 0, 0, width, height);
+        ctx.drawImage(document.getElementById("hpbar5"), height / 10, 68, 370, 50);
+        ctx.drawImage(document.getElementById("hpbar5"), height - 40, 68, 370, 50);
+        ctx.drawImage(document.getElementById("border"), blockX - 3, blockY - 3, blockWidth + 7, blockHeight + 7);
+        ctx.drawImage(document.getElementById("wall"), blockX, blockY, blockWidth, blockHeight);
+        tankACenterX = tankA + 0.5 * tankWidth;
+        tankACenterY = height - 0.5 * tankHeight;
+        tankBCenterX = tankB + 0.5 * tankWidth;
+        tankBCenterY = height - 0.5 * tankHeight;
+        if (control == false) {
+          if (tankLeftPressed && tankA > 0) {
+            tankA -= tankDa;
+          }
+          if (tankRightPressed && tankA + tankWidth < width / 2.5) {
+            tankA += tankDa;
+          }
+        } else if (control == true) {
+          if (tankLeftPressed && tankB + tankWidth > width / 1.5 - 20) {
+            tankB -= tankDb;
+          }
+          if (tankRightPressed && tankB + tankWidth < width) {
+            tankB += tankDb;
+          }
+        }
+        if (isCharging && !isFired) {
+          if (gauge < Math.PI * 2) { gauge += gaugeDIF; }
+          drawGausing();
+        }
+        if (!isFired) {
+          if (control == false) {
+            missileX = tankACenterX + cannonLength * Math.cos(cannonAAngle);
+            missileY = tankACenterY - cannonLength * Math.sin(cannonAAngle);
+          } else {
+            missileX = tankBCenterX + cannonLength * -Math.cos(cannonBAngle);
+            missileY = tankBCenterY - cannonLength * -Math.sin(cannonBAngle);
+          }
+        } else {
+          bang.play();
+          missileDy -= GRAVITY_ACCELERATION;
+          if (control == false) {
+            missileX = missileX + missileDx;
+            missileY = missileY - missileDy;
+          } else {
+            missileX = missileX - missileDx;
+            missileY = missileY - missileDy;
+          }
+        }
+        checkMissile();
+        drawTankA();
+        drawTankB();
+        drawMissile();
+        drawUI();
+        if (AHP <= 0) {
+          clearInterval(start);
+          if (confirm(Bname+"님 승리! 다시 하시겠습니까?")) {
+            location.reload();
+          }
+          else window.close();
+        }
+        else if (BHP <= 0) {
+          clearInterval(start);
+          if (confirm(Aname+"님 승리! 다시 하시겠습니까?")) {
+            location.reload();
+          }
+          else window.close();
+        }
+      };
+
+      const drawUI = () => {
+        if(AHP == 4) { ctx.drawImage(document.getElementById("hpbar4"), height / 10, 68, 370, 50); }
+        else if(AHP == 3) { ctx.drawImage(document.getElementById("hpbar3"), height / 10, 68, 370, 50); }
+        else if(AHP == 2) { ctx.drawImage(document.getElementById("hpbar2"), height / 10, 68, 370, 50); }
+        else if(AHP == 1) { ctx.drawImage(document.getElementById("hpbar1"), height / 10, 68, 370, 50); }
+        if(BHP == 4) { ctx.drawImage(document.getElementById("bhpbar4"), height - 40, 68, 370, 50); }
+        else if(BHP == 3) { ctx.drawImage(document.getElementById("bhpbar3"), height - 40, 68, 370, 50); }
+        else if(BHP == 2) { ctx.drawImage(document.getElementById("bhpbar2"), height - 40, 68, 370, 50); }
+        else if(BHP == 1) { ctx.drawImage(document.getElementById("bhpbar1"), height - 40, 68, 370, 50); }
+        ctx.font = "bold 65px Arial, sans-serif";
+        ctx.fillStyle = 'black';
+        ctx.fillText(count, blockX + 5, 115);
+        ctx.font = "bold 25px Arial, sans-serif";
+        ctx.fillText(Aname, height / 10, 150);
+        ctx.fillText(Bname, height + 270, 150);
+        ctx.font = "bold 20px Arial, sans-serif";
+        ctx.fillText("Skill", 45, 210);
+        ctx.fillText("Skill", width-90, 210);
+        ctx.fillStyle = 'green';
+        if(control == false) { ctx.fillText("Your Turn", height / 2 - 10, 145); }
+        else if (control == true) { ctx.fillText("Your Turn", height - 35, 145); }
+        if (fSkillA == true) { ctx.fillStyle = 'blue'; }
+        else { ctx.fillStyle = 'red'; }
+        ctx.fillText("1:체력회복", 10, 240);
+        if (sSkillA == true) { ctx.fillStyle = 'blue'; }
+        else { ctx.fillStyle = 'red'; }
+        ctx.fillText("2:거대미사일", 10, 270);
+        if (tSkillA == true) { ctx.fillStyle = 'blue'; }
+        else { ctx.fillStyle = 'red'; }
+        ctx.fillText("3:슈퍼미사일", 10, 300);
+        if (fSkillB == true) { ctx.fillStyle = 'blue'; }
+        else { ctx.fillStyle = 'red'; }
+        ctx.fillText("1:체력회복", width-130, 240);
+        if (sSkillB == true) { ctx.fillStyle = 'blue'; }
+        else { ctx.fillStyle = 'red'; }
+        ctx.fillText("2:거대미사일", width-130, 270);
+        if (tSkillB == true) { ctx.fillStyle = 'blue'; }
+        else { ctx.fillStyle = 'red'; }
+        ctx.fillText("3:슈퍼미사일", width-130, 300);
+      }
+
+      const checkMissile = () => {
+        if (missileX <= 0 || missileX >= width || missileY >= height) {
+          swap();
+        }
+        if (missileX >= blockX && missileX <= blockX + blockWidth && missileY >= blockY) {
+            missileX = width + 10;
+            missileY = height - 10;
+        }
+        if (control == true) {
+          if (missileX >= tankACenterX - 0.5 * tankWidth && missileX <= tankACenterX + 0.5 * tankWidth && missileY >= tankACenterY - 0.5 * tankHeight) {
+            if (checktSkill == 1) { AHP = AHP - 1; checktSkill = 0; }
+            AHP = AHP - 1;
+            boom.play();
+            missileX = width + 10;
+            missileY = height - 10;
+          }
+        } else {
+          if (missileX >= tankBCenterX - 0.5 * tankWidth && missileX <= tankBCenterX + 0.5 * tankWidth && missileY >= tankBCenterY - 0.5 * tankHeight) {
+            if (checktSkill == 1) { BHP = BHP - 1; checktSkill = 0; }
+            BHP = BHP - 1;
+            boom.play();
+            missileX = width + 10;
+            missileY = height - 10;
+          }
+        }
+      };
+
+      const drawMissile = () => {
+        ctx.beginPath();
+        ctx.arc(missileX, missileY, missileRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.closePath();
+      };
+
+      const drawGausing = () => {
+        if (control == false) {
+          ctx.beginPath();
+          ctx.arc(tankACenterX, tankACenterY - cannonLength - 10, gaugeBarRadius, Math.PI, gauge, false);
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.arc(tankBCenterX, tankBCenterY - cannonLength - 10, gaugeBarRadius, Math.PI, gauge, false);
+          ctx.stroke();
+        }
+      };
+
+      const drawTankA = () => {
+        ctx.lineWidth = 5;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(tankA, height - tankHeight);
+        ctx.lineTo(tankA + tankWidth, height - tankHeight);
+        ctx.lineTo(tankA + tankWidth, height);
+        ctx.lineTo(tankA, height);
+        ctx.lineTo(tankA, height - tankHeight);
+        ctx.moveTo(tankACenterX, tankACenterY);
+        ctx.fillStyle = "skyblue";
+        ctx.fillRect(tankACenterX - 25, tankACenterY - 25, tankWidth, tankHeight);
+        ctx.lineTo(tankACenterX + cannonLength * Math.cos(cannonAAngle), tankACenterY - cannonLength * Math.sin(cannonAAngle));
+        ctx.stroke();
+        ctx.closePath();
+      };
+
+      const drawTankB = () => {
+        ctx.lineWidth = 5;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(tankB, height - tankHeight);
+        ctx.lineTo(tankB + tankWidth, height - tankHeight);
+        ctx.lineTo(tankB + tankWidth, height);
+        ctx.lineTo(tankB, height);
+        ctx.lineTo(tankB, height - tankHeight);
+        ctx.moveTo(tankBCenterX, tankBCenterY);
+        ctx.fillStyle = "skyblue";
+        ctx.fillRect(tankBCenterX - 25, tankBCenterY - 25, tankWidth, tankHeight);
+        ctx.lineTo(tankBCenterX - cannonLength * Math.cos(cannonBAngle), tankBCenterY + cannonLength * Math.sin(cannonBAngle));
+        ctx.stroke();
+        ctx.closePath();
+      };
+
+      draw();
+
+      const swap = () => {
+        control = !control;
+        isFired = false;
+        isCharging = false;
+        missileRadius = 5;
+        count = 9;
+      }
+
+      const skillHandler = (event) => {
+        if (event.keyCode == 49) {
+          if (control == false && fSkillA == true && !isCharging && !isFired && AHP != 5) {
+            useSkill.play();
+            AHP += 1;
+            fSkillA = false;
+            checktSkill = 0;
+            swap();
+          }
+          else if (control == true && fSkillB == true && !isCharging && !isFired && BHP != 5) {
+            useSkill.play();
+            BHP += 1;
+            fSkillB = false;
+            checktSkill = 0;
+            swap();
+          }
+        }
+        else if (event.keyCode == 50) {
+          if (control == false && sSkillA == true && !isCharging && !isFired) {
+            useSkill.play();
+            missileRadius = 20;
+            sSkillA = false;
+          }
+          else if (control == true && sSkillB == true && !isCharging && !isFired) {
+            useSkill.play();
+            missileRadius = 20;
+            sSkillB = false;
+          }
+        }
+        else if (event.keyCode == 51) {
+          if (control == false && tSkillA == true && !isCharging && !isFired) {
+            useSkill.play();
+            checktSkill = 1;
+            tSkillA = false;
+          }
+          else if (control == true && tSkillB == true && !isCharging && !isFired) {
+            useSkill.play();
+            checktSkill = 1;
+            tSkillB = false;
+          }
+        }
+      }
+
+      const keydownHandler = (event) => {
+        if (control == false && !isFired && !isCharging) {
+          if (event.keyCode === 37) { tankLeftPressed = true; }
+          else if (event.keyCode === 39) { tankRightPressed = true; }
+          else if (event.keyCode === 38 && cannonAAngle <= Math.PI / 2) {
+            cannonAAngle += cannonAngleDIF;
+          } else if (event.keyCode === 40 && cannonAAngle >= 0) {
+            cannonAAngle -= cannonAngleDIF;
+          } else if (event.keyCode === 32 && !isFired) {
+            isCharging = true;
+          }
+        } else if (control == true && !isFired && !isCharging) {
+          if (event.keyCode === 37) { tankLeftPressed = true; }
+          else if (event.keyCode === 39) { tankRightPressed = true; }
+          else if (event.keyCode === 38 && cannonBAngle >= -(Math.PI / 2)) {
+            cannonBAngle -= cannonAngleDIF;
+          } else if (event.keyCode === 40 && cannonBAngle <= 0) {
+            cannonBAngle += cannonAngleDIF;
+          } else if (event.keyCode === 32 && !isFired) {
+            isCharging = true;
+          }
+        }
+      };
+
+      const keyupHandler = (event) => {
+        if (event.keyCode === 37) { tankLeftPressed = false; }
+        else if (event.keyCode === 39) { tankRightPressed = false; }
+        else if (event.keyCode === 32 && !isFired) {
+          isCharging = false;
+          isFired = true;
+          missilePower = gauge * 1.6;
+          if (control == false) {
+            missileDx = missilePower * Math.cos(cannonAAngle);
+            missileDy = missilePower * Math.sin(cannonAAngle);
+          } else {
+            missileDx = missilePower * Math.cos(cannonBAngle);
+            missileDy = missilePower * -Math.sin(cannonBAngle);
+          }
+          gauge = Math.PI;
+        }
+      };
+
+      const name = () => {
+        Aname = prompt("Player1의 이름을 입력해주세요.");
+        while(Aname == null || Aname == "") {Aname = prompt("Player1의 이름을 다시 입력해주세요.")};
+        Bname = prompt("Player2의 이름을 입력해주세요.(Player1과 이름 중복 불가)");
+        while(Bname == null || Bname == "" || Bname == Aname) {Bname = prompt("Player2의 이름을 다시 입력해주세요.(Player1과 이름 중복 불가)")};
+      }
+
+      const counter = () => {
+        if(!isCharging && !isFired) {
+          count = count - 1;
+          if (count <= 0) {
+            swap();
+            checktSkill = 0;
+          }
+        }
+      }
+
+      name();
+      let start = setInterval(draw, 10);
+      setInterval(counter, 1000);
+
+      document.addEventListener("keydown", keydownHandler, false);
+      document.addEventListener("keyup", keyupHandler, false);
+      document.addEventListener("keyup", skillHandler, false);
+    </script>
+  </body>
+</html>
