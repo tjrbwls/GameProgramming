@@ -32,3 +32,8 @@
 ### 업그레이드 게임 실행 화면
 
 ![us](https://github.com/tjrbwls/GameProgramming/assets/118953733/7122d931-b878-4251-b88a-c74ab5e2cc44)
+
+
+### 게임 사이트
+
+[게임 하러가기](https://tjrbwls.github.io/GameProgramming/week10/index.html)
