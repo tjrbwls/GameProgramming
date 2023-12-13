@@ -1,3 +1,13 @@
+## PPT
+
+[2021563038 서규진.pptx](https://github.com/tjrbwls/GameProgramming/files/13657272/2021563038.pptx)
+
+
+## PDF
+
+[2021563038 서규진.pdf](https://github.com/tjrbwls/GameProgramming/files/13657271/2021563038.pdf)
+
+
 ## 변경 및 추가된 것
 
 - 공 색깔 변경
